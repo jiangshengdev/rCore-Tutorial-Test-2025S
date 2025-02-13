@@ -106,29 +106,11 @@ pub enum TaskStatus {
     Exited,
 }
 
-#[derive(Copy, Clone, Debug)]
-pub struct SyscallInfo {
-    pub id: usize,
-    pub times: usize,
-}
-
-const MAX_SYSCALL_NUM: usize = 500;
-
-#[derive(Debug)]
-pub struct TaskInfo {
-    pub status: TaskStatus,
-    pub syscall_times: [u32; MAX_SYSCALL_NUM],
-    pub time: usize,
-}
-
-impl TaskInfo {
-    pub fn new() -> Self {
-        TaskInfo {
-            status: TaskStatus::UnInit,
-            syscall_times: [0; MAX_SYSCALL_NUM],
-            time: 0,
-        }
-    }
+#[repr(C)]
+pub enum TraceRequest {
+    Read,
+    Write,
+    Syscall,
 }
 
 #[repr(C)]
@@ -307,8 +289,23 @@ pub fn pipe(pipe_fd: &mut [usize]) -> isize {
     sys_pipe(pipe_fd)
 }
 
-pub fn task_info(info: &mut TaskInfo) -> isize {
-    sys_task_info(info)
+pub fn trace(request: TraceRequest, id: usize, data: usize) -> isize {
+    sys_trace(request as usize, id, data)
+}
+
+pub fn trace_read(addr: *const u8) -> Option<u8> {
+    match trace(TraceRequest::Read, addr as usize, 0) {
+        -1 => None,
+        data => Some(data as u8),
+    }
+}
+
+pub fn trace_write(addr: *const u8, data: u8) -> isize {
+    trace(TraceRequest::Write, addr as usize, data as usize)
+}
+
+pub fn count_syscall(id: usize) -> isize {
+    trace(TraceRequest::Syscall, id, 0)
 }
 
 pub fn thread_create(entry: usize, arg: usize) -> isize {
@@ -461,7 +458,7 @@ pub fn sigaction(
     sys_sigaction(
         signum,
         action.map_or(core::ptr::null(), |a| a),
-        old_action.map_or(core::ptr::null_mut(), |a| a)
+        old_action.map_or(core::ptr::null_mut(), |a| a),
     )
 }
 

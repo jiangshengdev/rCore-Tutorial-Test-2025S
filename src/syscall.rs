@@ -1,4 +1,4 @@
-use crate::{TaskInfo, SignalAction};
+use crate::SignalAction;
 
 use super::{Stat, TimeVal};
 
@@ -31,7 +31,7 @@ pub const SYSCALL_MAIL_READ: usize = 401;
 pub const SYSCALL_MAIL_WRITE: usize = 402;
 pub const SYSCALL_DUP: usize = 24;
 pub const SYSCALL_PIPE: usize = 59;
-pub const SYSCALL_TASK_INFO: usize = 410;
+pub const SYSCALL_TRACE: usize = 410;
 pub const SYSCALL_THREAD_CREATE: usize = 460;
 pub const SYSCALL_WAITTID: usize = 462;
 pub const SYSCALL_MUTEX_CREATE: usize = 463;
@@ -210,8 +210,8 @@ pub fn sys_pipe(pipe: &mut [usize]) -> isize {
     syscall(SYSCALL_PIPE, [pipe.as_mut_ptr() as usize, 0, 0])
 }
 
-pub fn sys_task_info(info: &mut TaskInfo) -> isize {
-    syscall(SYSCALL_TASK_INFO, [info as *const _ as usize, 0, 0])
+pub fn sys_trace(trace_request: usize, id: usize, data: usize) -> isize {
+    syscall(SYSCALL_TRACE, [trace_request, id, data])
 }
 
 pub fn sys_thread_create(entry: usize, arg: usize) -> isize {
@@ -273,11 +273,7 @@ pub fn sys_sigaction(
 ) -> isize {
     syscall(
         SYSCALL_SIGACTION,
-        [
-            signum as usize,
-            action as usize,
-            old_action as usize,
-        ],
+        [signum as usize, action as usize, old_action as usize],
     )
 }
 
