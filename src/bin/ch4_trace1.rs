@@ -14,8 +14,8 @@ pub fn main() -> usize {
     assert_eq!(Some(22), trace_read(&var as *const _));
     assert_eq!(0, trace_write(&var as *const _, 33));
 
-    assert_eq!(None, trace_read(usize::MAX as *const _));
-    assert_eq!(-1, trace_write(usize::MAX as *const _, 0));
+    assert_eq!(None, trace_read(isize::MAX as usize as *const _));
+    assert_eq!(-1, trace_write(isize::MAX as usize as *const _, 0));
     assert_eq!(None, trace_read(0x80200000 as *const _));
     assert_eq!(-1, trace_write(0x80200000 as *const _, 0));
     
