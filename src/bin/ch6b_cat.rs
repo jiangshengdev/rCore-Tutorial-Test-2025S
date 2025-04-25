@@ -1,9 +1,9 @@
 #![no_std]
 #![no_main]
 
+extern crate alloc;
 #[macro_use]
 extern crate user_lib;
-extern crate alloc;
 
 use alloc::string::String;
 use user_lib::{close, open, read, OpenFlags};
